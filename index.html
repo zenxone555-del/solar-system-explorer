@@ -85,7 +85,7 @@
         <section id="sec-explorer" class="space-y-6">
             <div class="text-center max-w-2xl mx-auto space-y-2">
                 <h2 class="text-3xl font-bold text-white glow-text">สำรวจดาวเคราะห์ในระบบสุริยะ</h2>
-                <p class="text-slate-400 text-sm">คลิกเลือกดาวเคราะห์ด้านล่างเพื่อเรียนรู้ข้อมูล รายละเอียดความรู้ความเข้าใจเกี่ยวกับอวกาศ</p>
+                <p class="text-slate-400 text-sm">คลิกเลือกดาวเคราะห์ด้านล่างเพื่อเรียนรู้ข้อมูลความรู้เกี่ยวกับอวกาศ</p>
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3" id="planet-buttons">
@@ -115,7 +115,7 @@
                     </div>
                     <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
                         <div class="text-xs text-slate-400">พลังชีวิต</div>
-                        <div id="game-hp" class="text-xl sm:text-2xl font-bold text-rose-500">❤️❤️️❤️</div>
+                        <div id="game-hp" class="text-xl sm:text-2xl font-bold text-rose-500">❤️❤❤️</div>
                     </div>
                     <button id="btn-start-game" onclick="startGame()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition-all font-sans text-sm">
                         <i class="fa-solid fa-play mr-1"></i> เริ่มใหม่
@@ -187,9 +187,7 @@
 
     <!-- JavaScript Engine -->
     <script>
-        /* -------------------------------------------------------------
-           1. PLANET DATA & EXPLORER MODULE
-        ------------------------------------------------------------- */
+        /* 1. PLANET DATA & EXPLORER MODULE */
         const planetsData = [
             { id: 'sun', name: 'ดวงอาทิตย์ (Sun)', color: 'from-amber-400 to-orange-600', icon: '☀️', type: 'ดาวฤกษ์ศูนย์กลาง', temp: '5,500 °C', dist: '0 AU', desc: 'ศูนย์กลางของระบบสุริยะ เป็นดาวฤกษ์ขนาดใหญ่ที่มีมวลคิดเป็น 99.8% ของมวลทั้งหมดในระบบสุริยะ ให้พลังงานแสงและความร้อนแก่ดาวเคราะห์บริวาร' },
             { id: 'mercury', name: 'ดาวพุธ (Mercury)', color: 'from-slate-400 to-stone-500', icon: '🪨', type: 'ดาวเคราะห์หิน', temp: '-180 ถึง 430 °C', dist: '0.39 AU', desc: 'ดาวเคราะห์ที่อยู่ใกล้ดวงอาทิตย์มากที่สุด และมีขนาดเล็กที่สุดในระบบสุริยะ ไม่มีชั้นบรรยากาศหนาแน่นเพื่อเก็บความร้อน' },
@@ -251,9 +249,7 @@
             `;
         }
 
-        /* -------------------------------------------------------------
-           2. EASY AIM & SHOOT SPACE GAME MODULE
-        ------------------------------------------------------------- */
+        /* 2. EASY AIM & SHOOT SPACE GAME MODULE */
         const canvas = document.getElementById('spaceCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -288,7 +284,6 @@
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // Aim & Shoot Input Handler (Click/Touch anywhere to aim & shoot)
         function handlePointerInput(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
             const targetX = (clientX - rect.left) * (canvas.width / rect.width);
@@ -345,7 +340,7 @@
         function triggerShot() {
             if (fireCooldown <= 0) {
                 shootLaser();
-                fireCooldown = 9; // Delay between auto shots
+                fireCooldown = 9;
             }
         }
 
@@ -404,23 +399,19 @@
         function gameLoop() {
             if(!gameRunning) return;
 
-            // Clear Background
             ctx.fillStyle = '#030712';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Stars
             ctx.fillStyle = '#ffffff';
             for(let i=0; i<30; i++) {
                 ctx.fillRect((i*37)%canvas.width, (i*53)%canvas.height, (i%2)+1, (i%2)+1);
             }
 
-            // Continuous Firing when holding down
             if (fireCooldown > 0) fireCooldown--;
             if (isFiring && fireCooldown <= 0) {
                 triggerShot();
             }
 
-            // Player Keyboard Movement
             let dx = 0, dy = 0;
             if (keys['ArrowUp'] || keys['KeyW']) dy -= 1;
             if (keys['ArrowDown'] || keys['KeyS']) dy += 1;
@@ -432,11 +423,9 @@
                 player.y += dy * player.speed;
             }
 
-            // Keep player inside canvas
             player.x = Math.max(player.size, Math.min(canvas.width - player.size, player.x));
             player.y = Math.max(player.size, Math.min(canvas.height - player.size, player.y));
 
-            // Draw Player Ship
             ctx.save();
             ctx.translate(player.x, player.y);
             ctx.rotate(player.angle);
@@ -456,7 +445,6 @@
 
             ctx.restore();
 
-            // Spawn Enemies
             spawnTimer++;
             if(spawnTimer > 40) {
                 spawnTimer = 0;
@@ -480,7 +468,6 @@
                 });
             }
 
-            // Update & Draw Lasers
             for(let i = lasers.length - 1; i >= 0; i--) {
                 const l = lasers[i];
                 l.x += l.vx;
@@ -496,7 +483,6 @@
                 }
             }
 
-            // Update & Draw Enemies (1-Hit Kill)
             for(let eIdx = enemies.length - 1; eIdx >= 0; eIdx--) {
                 const enemy = enemies[eIdx];
                 enemy.x += enemy.vx;
@@ -510,7 +496,6 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
 
-                // Check Laser Collision
                 for(let lIdx = lasers.length - 1; lIdx >= 0; lIdx--) {
                     const l = lasers[lIdx];
                     const dist = Math.hypot(enemy.x - l.x, enemy.y - l.y);
@@ -525,7 +510,6 @@
                     }
                 }
 
-                // Check Player Collision
                 if(enemies[eIdx]) {
                     const distToPlayer = Math.hypot(enemy.x - player.x, enemy.y - player.y);
                     if(distToPlayer < enemy.radius + player.size * 0.7) {
@@ -542,7 +526,6 @@
                 }
             }
 
-            // Explosions
             for(let pIdx = particles.length - 1; pIdx >= 0; pIdx--) {
                 const p = particles[pIdx];
                 p.x += p.vx;
@@ -563,9 +546,7 @@
             animationFrameId = requestAnimationFrame(gameLoop);
         }
 
-        /* -------------------------------------------------------------
-           3. QUIZ MODULE
-        ------------------------------------------------------------- */
+        /* 3. QUIZ MODULE */
         const quizData = [
             { q: 'ข้อใดคือดาวเคราะห์ที่อยู่ใกล้ดวงอาทิตย์มากที่สุด?', opts: ['ดาวศุกร์', 'ดาวพุธ', 'โลก', 'ดาวอังคาร'], ans: 1 },
             { q: 'ดาวเคราะห์ดวงใดได้ชื่อว่าเป็น "ดาวเคราะห์แดง"?', opts: ['ดาวพฤหัสบดี', 'ดาวเสาร์', 'ดาวอังคาร', 'ดาวพุธ'], ans: 2 },
@@ -646,9 +627,7 @@
             }
         }
 
-        /* -------------------------------------------------------------
-           4. TAB SWITCHING SYSTEM
-        ------------------------------------------------------------- */
+        /* 4. TAB SWITCHING SYSTEM */
         function switchTab(tabName) {
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
