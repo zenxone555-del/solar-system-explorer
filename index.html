@@ -2,660 +2,675 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solar System Explorer: Mars & Beyond (TH/EN)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar System Explorer & Space Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* CSS */
-        :root {
-            --primary: #0f172a; --secondary: #1e293b; --accent: #38bdf8;
-            --danger: #ef4444; --success: #22c55e; --text: #f1f5f9;
-            --text-muted: #94a3b8; --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --grid: #1e293b; --mobile-control-size: 70px;
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            user-select: none;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body { font-family: var(--font); background-color: var(--primary); color: var(--text); overflow: hidden; }
-        #app { width: 100vw; height: 100vh; position: relative; }
-        canvas { display: block; background: radial-gradient(circle, #001a33 0%, #000 100%); }
-
-        /* UI Screens */
-        .screen {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(15, 23, 42, 0.9); padding: 20px; z-index: 10;
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
         }
-        #hud {
-            position: absolute; top: 0; left: 0; right: 0; height: 70px;
-            background: rgba(30, 41, 59, 0.9); border-bottom: 2px solid var(--accent);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; z-index: 5; font-size: 14px; color: var(--text-muted);
+        .glow-text {
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
         }
-        #hud b { color: var(--text); }
-        .hidden { display: none !important; }
-
-        /* General UI */
-        h1 { font-size: 2.2rem; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; text-align: center; }
-        h2 { font-size: 1.4rem; color: var(--text); margin-bottom: 20px; text-align: center; }
-        p { font-size: 1rem; color: var(--text-muted); margin-bottom: 20px; text-align: center; max-width: 600px; line-height: 1.5; }
-        button {
-            padding: 12px 30px; border: 2px solid var(--accent); background: transparent;
-            color: var(--accent); font-weight: bold; cursor: pointer; transition: 0.2s;
-            font-size: 1rem; border-radius: 4px; margin: 5px;
+        .glow-box {
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.25);
         }
-        button:hover { background: var(--accent); color: var(--primary); }
-        button.danger { border-color: var(--danger); color: var(--danger); }
-        button.danger:hover { background: var(--danger); color: var(--text); }
-        button:disabled { border-color: #475569; color: #475569; cursor: not-allowed; }
-
-        /* Crafting Modal */
-        #crafting-modal {
-            position: absolute; inset: 50% 0 0 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 700px; height: 80%;
-            background: var(--secondary); border: 2px solid var(--accent); border-radius: 8px;
-            z-index: 20; padding: 20px; display: flex; flex-direction: column;
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        #quiz-section { flex: 1; display: flex; flex-direction: column; margin-bottom: 15px; }
-        #quiz-question { font-size: 1.2rem; color: var(--text); font-weight: bold; margin-bottom: 15px; }
-        #quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        #quiz-options button { width: 100%; justify-content: center; text-align: left; margin: 0; padding: 15px; }
-        #quiz-options button.correct { border-color: var(--success); color: var(--success); }
-        #quiz-options button.incorrect { border-color: var(--danger); color: var(--danger); }
-        #craft-controls { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--grid); padding-top: 10px; }
-
-        /* Mobile Controls */
-        #mobile-controls {
-            position: absolute; bottom: 20px; left: 0; right: 0; height: 120px;
-            display: flex; justify-content: space-around; align-items: center; z-index: 5;
-            padding: 0 20px; visibility: hidden; pointer-events: none;
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
         }
-        #app.mobile #mobile-controls { visibility: visible; pointer-events: auto; }
-        .m-ctrl-btn {
-            width: var(--mobile-control-size); height: var(--mobile-control-size);
-            background: rgba(148, 163, 184, 0.4); border-radius: 50%;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 24px; color: var(--text); border: 2px solid rgba(241, 245, 249, 0.6);
-            cursor: pointer; position: relative;
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
         }
-        #joystick-outer { width: 120px; height: 120px; background: rgba(148, 163, 184, 0.2); border-radius: 50%; position: relative; }
-        #joystick-inner { width: 60px; height: 60px; background: rgba(241, 245, 249, 0.6); border-radius: 50%; position: absolute; inset: 30px; cursor: pointer; }
-        #mobile-fire-btn { border-color: var(--danger); color: var(--danger); background: rgba(239, 68, 68, 0.2); margin-left: auto; }
-        #app.mobile-fire-active #mobile-fire-btn { background: var(--danger); color: var(--text); }
-        
-        /* Lang Switcher */
-        .lang-switch { position: absolute; top: 10px; right: 10px; display: flex; z-index: 100; }
-        .lang-switch button { padding: 5px 12px; font-size: 13px; margin: 0 2px; border-radius: 4px; font-weight: bold; }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
     </style>
 </head>
-<body onload="init()">
-    <div id="app">
-        <canvas id="gameCanvas"></canvas>
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-white">
 
-        <div id="hud" class="hidden">
-            <div>🚀 <b id="player-planet">--</b> | HP: <b id="player-health">100</b></div>
-            <div>Time: <b id="game-time">0:00</b> | Score: <b id="game-score">0</b></div>
-            <div>💎 <b id="mineral-count">0</b>/5 | <span id="token-icon">☀️</span> <b id="token-count">0</b></div>
-        </div>
-
-        <div id="mobile-controls">
-            <div id="joystick-outer"><div id="joystick-inner"></div></div>
-            <div id="mobile-fire-btn" class="m-ctrl-btn">🔥</div>
-        </div>
-
-        <div class="lang-switch">
-            <button id="btn-lang-th" onclick="toggleLang('th')">TH</button>
-            <button id="btn-lang-en" onclick="toggleLang('en')">EN</button>
-        </div>
-
-        <!-- Title Scene -->
-        <div id="title-scene" class="screen">
-            <h1>Solar System Explorer</h1>
-            <h2>การสำรวจระบบสุริยะเเละดาวเคราะห์</h2>
-            <p data-key="title-desc">เริ่มต้นภารกิจสำรวจระบบสุริยะ! ล่ามอนสเตอร์อวกาศ ฟาร์มแร่ และไขปริศนาดาราศาสตร์แบบ 2 ภาษา (ไทย-อังกฤษ) เพื่อสร้างเครื่องยนต์วาร์ปและปลดล็อกดาวเคราะห์ดวงถัดไป</p>
-            <button onclick="startGame()" data-key="start-btn">เริ่มเกม (Start Game)</button>
-            <button onclick="resetGame()" class="danger" data-key="reset-save">รีเซ็ตคะแนนสูงสุด (Reset High Score)</button>
-        </div>
-
-        <!-- GameOver Scene -->
-        <div id="gameover-scene" class="screen hidden">
-            <h1>Game Over</h1>
-            <p data-key="gameOver-desc">สิ้นสุดภารกิจสำรวจ! คุณทำคะแนนได้:</p>
-            <h2 id="final-score">0</h2>
-            <button onclick="initTitleScene()" data-key="back-home">กลับหน้าแรก (Back to Title)</button>
-        </div>
-
-        <!-- Crafting Quiz Modal (Pop-up) -->
-        <div id="crafting-modal" class="hidden">
-            <h2 data-key="crafting-title">ศูนย์กลางการคราฟต์ / Crafting Center</h2>
-            <div id="quiz-section">
-                <p id="quiz-question"></p>
-                <div id="quiz-options"></div>
+    <!-- Header Navbar -->
+    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-xl shadow-lg shadow-cyan-500/30">
+                    🚀
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black font-orbitron tracking-wider bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                        SOLAR EXPLORER
+                    </h1>
+                    <p class="text-xs text-slate-400">ระบบสำรวจและเกมตะลุยอวกาศ</p>
+                </div>
             </div>
-            <div id="craft-controls">
-                <div>⚠️ <span data-key="need-text">ต้องการ:</span> 💎 5, <span id="need-token-icon">☀️️</span> 3</div>
-                <button id="craft-btn" onclick="craftWarpEngine()" disabled data-key="craft-btn-text">คราฟต์เครื่องยนต์วาร์ป (Craft Warp Engine)</button>
-                <button onclick="ui.closeCraftingQuizModal()" data-key="close-btn">ปิด (Close)</button>
-            </div>
-        </div>
-    </div>
 
+            <!-- Tab Navigation Buttons -->
+            <nav class="flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 text-sm font-medium">
+                <button onclick="switchTab('explorer')" id="tab-explorer" class="tab-btn active px-3.5 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    <i class="fa-solid fa-globe"></i>
+                    <span class="hidden sm:inline">สำรวจระบบสุริยะ</span>
+                </button>
+                <button onclick="switchTab('game')" id="tab-game" class="tab-btn px-3.5 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-gamepad text-amber-400"></i>
+                    <span>เกมตะลุยอวกาศ</span>
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn px-3.5 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-brain text-purple-400"></i>
+                    <span class="hidden sm:inline">แบบทดสอบ</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto w-full p-4 md:p-6 flex-grow">
+
+        <!-- TAB 1: SOLAR EXPLORER -->
+        <section id="sec-explorer" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h2 class="text-3xl font-bold text-white glow-text">สำรวจดาวเคราะห์ในระบบสุริยะ</h2>
+                <p class="text-slate-400 text-sm">คลิกเลือกดาวเคราะห์ด้านล่างเพื่อเรียนรู้ข้อมูล รายละเอียดความรู้ความเข้าใจเกี่ยวกับอวกาศ</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3" id="planet-buttons">
+                <!-- Generated by JS -->
+            </div>
+
+            <div id="planet-detail" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box grid md:grid-cols-12 gap-6 items-center transition-all">
+                <!-- Content generated by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: SPACE GAME (EASY AIM & SHOOT) -->
+        <section id="sec-game" class="hidden space-y-4">
+            <div class="flex flex-wrap justify-between items-center bg-slate-900/80 border border-slate-800 p-4 rounded-2xl gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold font-orbitron text-cyan-400 flex items-center gap-2">
+                        <i class="fa-solid fa-crosshairs text-amber-400"></i> SPACE GUARDIAN
+                    </h2>
+                    <p class="text-xs text-slate-400">คลิกหรือแตะที่เป้าหมายเพื่อยิงทำลาย (ยิง 1 นัดระเบิดทันที)</p>
+                </div>
+                
+                <!-- Game HUD -->
+                <div class="flex items-center gap-4 sm:gap-6 font-orbitron">
+                    <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                        <div class="text-xs text-slate-400">คะแนน</div>
+                        <div id="game-score" class="text-xl sm:text-2xl font-bold text-cyan-400">0</div>
+                    </div>
+                    <div class="bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+                        <div class="text-xs text-slate-400">พลังชีวิต</div>
+                        <div id="game-hp" class="text-xl sm:text-2xl font-bold text-rose-500">❤️❤️️❤️</div>
+                    </div>
+                    <button id="btn-start-game" onclick="startGame()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition-all font-sans text-sm">
+                        <i class="fa-solid fa-play mr-1"></i> เริ่มใหม่
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Canvas Container -->
+            <div class="relative w-full aspect-video bg-black rounded-2xl border border-slate-800 overflow-hidden shadow-2xl flex items-center justify-center">
+                <canvas id="spaceCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+                
+                <!-- Game Overlay -->
+                <div id="game-overlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center z-10">
+                    <div class="text-5xl mb-3">🎯</div>
+                    <h3 class="text-3xl font-black font-orbitron text-white mb-2" id="overlay-title">ภารกิจยิงอุกกาบาต</h3>
+                    <p class="text-slate-300 max-w-md text-sm mb-6" id="overlay-desc">
+                        <b>วิธียิงง่ายๆ:</b> แตะหรือคลิกตรงไหน ยานจะหันไปยิงตรงนั้นทันที! <br>
+                        <span class="text-amber-400 font-semibold">* กดค้างไว้เพื่อยิงรัวรัว | ยิง 1 ครั้งศัตรูพังทันที *</span>
+                    </p>
+                    <button onclick="startGame()" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-cyan-500/40 hover:scale-105 transition-all">
+                        🚀 กดเพื่อเริ่มเล่น
+                    </button>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-center text-slate-300">
+                💡 <b class="text-cyan-300">วิธีเล่น:</b> แตะ/คลิกจุดที่ต้องการยิงบนหน้าจอ หรือใช้ปุ่ม <b class="text-white">WASD / ปุ่มลูกศร</b> เพื่อเคลื่อนที่ยาน | กด <b class="text-white">Spacebar</b> เพื่อยิง
+            </div>
+        </section>
+
+        <!-- TAB 3: QUIZ -->
+        <section id="sec-quiz" class="hidden max-w-2xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold text-purple-400">ควิซทดสอบความรู้ดาราศาสตร์</h2>
+                <p class="text-slate-400 text-sm">ตอบคำถามเกี่ยวกับระบบสุริยะเพื่อวัดระดับความเป็นผู้เชี่ยวชาญอวกาศ!</p>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl" id="quiz-box">
+                <div class="flex justify-between items-center text-sm text-slate-400 border-b border-slate-800 pb-3">
+                    <span>คำถามที่ <span id="quiz-num" class="text-cyan-400 font-bold">1</span> / 5</span>
+                    <span>คะแนน: <span id="quiz-score" class="text-purple-400 font-bold">0</span></span>
+                </div>
+
+                <h3 id="quiz-question" class="text-lg md:text-xl font-bold text-white">
+                    ข้อใดคือดาวเคราะห์ที่อยู่ใกล้ดวงอาทิตย์มากที่สุด?
+                </h3>
+
+                <div class="grid gap-3" id="quiz-options">
+                    <!-- Quiz options generated by JS -->
+                </div>
+
+                <div id="quiz-feedback" class="hidden p-3 rounded-xl text-center text-sm font-semibold"></div>
+
+                <div class="flex justify-end">
+                    <button id="btn-next-quiz" onclick="nextQuestion()" class="hidden bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all">
+                        ข้อถัดไป <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-4 text-center text-xs text-slate-500">
+        <p>© 2026 Solar System Explorer Project | สื่อการเรียนรู้วิทยาศาสตร์และเทคโนโลยี</p>
+    </footer>
+
+    <!-- JavaScript Engine -->
     <script>
-        // JavaScript
-        "use strict";
-
-        // --- Config & Consts ---
-        const CANVAS_WIDTH = 1600; const CANVAS_HEIGHT = 1200;
-        const GRID_SIZE = 40; const PLAYER_SIZE = 30;
-        const MONSTER_SIZE = 30; const MINERAL_SIZE = 20;
-        const LASER_SPEED = 25; const MONSTER_MOVE_TIMER_MIN = 3000; const MONSTER_MOVE_TIMER_MAX = 8000;
-        const PLAYER_I_FRAMES_DURATION = 500;
-
-        const PLANETS = [
-            { id: 1, nameTh: "ดาวอังคาร", nameEn: "Mars", symbol: '🔴', colorSurface: '#922a15', colorSurrounding: '#cb6c5c', colorAccent: '#f59e0b', monsterCount: 5 },
-            { id: 2, nameTh: "ดาวพุธ", nameEn: "Mercury", symbol: '💧', colorSurface: '#4f4f4f', colorSurrounding: '#a3a3a3', colorAccent: '#e5e7eb', monsterCount: 7 },
-            { id: 3, nameTh: "ดาวศุกร์", nameEn: "Venus", symbol: '✨', colorSurface: '#ff9c00', colorSurrounding: '#ffce8c', colorAccent: '#fff', monsterCount: 9 },
-            { id: 4, nameTh: "โลก", nameEn: "Earth", symbol: '🌍', colorSurface: '#2563eb', colorSurrounding: '#fff', colorAccent: '#bef264', monsterCount: 11 },
-            { id: 5, nameTh: "ดาวพฤหัสบดี", nameEn: "Jupiter", symbol: '⛈️', colorSurface: '#a855f7', colorSurrounding: '#e9d5ff', colorAccent: '#fff', monsterCount: 13 },
-            { id: 6, nameTh: "ดาวเสาร์", nameEn: "Saturn", symbol: '🪐', colorSurface: '#facc15', colorSurrounding: '#fff7ed', colorAccent: '#60a5fa', monsterCount: 15 },
-            { id: 7, nameTh: "ดาวยูเรนัส", nameEn: "Uranus", symbol: '🌀', colorSurface: '#06b6d4', colorSurrounding: '#a5f3fc', colorAccent: '#fff', monsterCount: 17 },
-            { id: 8, nameTh: "ดาวเนปจูน", nameEn: "Neptune", symbol: '🔱', colorSurface: '#312e81', colorSurrounding: '#818cf8', colorAccent: '#fff', monsterCount: 20 },
+        /* -------------------------------------------------------------
+           1. PLANET DATA & EXPLORER MODULE
+        ------------------------------------------------------------- */
+        const planetsData = [
+            { id: 'sun', name: 'ดวงอาทิตย์ (Sun)', color: 'from-amber-400 to-orange-600', icon: '☀️', type: 'ดาวฤกษ์ศูนย์กลาง', temp: '5,500 °C', dist: '0 AU', desc: 'ศูนย์กลางของระบบสุริยะ เป็นดาวฤกษ์ขนาดใหญ่ที่มีมวลคิดเป็น 99.8% ของมวลทั้งหมดในระบบสุริยะ ให้พลังงานแสงและความร้อนแก่ดาวเคราะห์บริวาร' },
+            { id: 'mercury', name: 'ดาวพุธ (Mercury)', color: 'from-slate-400 to-stone-500', icon: '🪨', type: 'ดาวเคราะห์หิน', temp: '-180 ถึง 430 °C', dist: '0.39 AU', desc: 'ดาวเคราะห์ที่อยู่ใกล้ดวงอาทิตย์มากที่สุด และมีขนาดเล็กที่สุดในระบบสุริยะ ไม่มีชั้นบรรยากาศหนาแน่นเพื่อเก็บความร้อน' },
+            { id: 'venus', name: 'ดาวศุกร์ (Venus)', color: 'from-amber-200 to-yellow-500', icon: '🌕', type: 'ดาวเคราะห์หิน', temp: '465 °C', dist: '0.72 AU', desc: 'ดาวเคราะห์ที่ร้อนที่สุดในระบบสุริยะ เนื่องจากมีชั้นบรรยากาศก๊าซคาร์บอนไดออกไซด์หนาแน่น ก่อให้เกิดสภาวะเรือนกระจกแบบรุนแรง' },
+            { id: 'earth', name: 'โลก (Earth)', color: 'from-blue-500 to-emerald-500', icon: '🌍', type: 'ดาวเคราะห์หิน', temp: '15 °C', dist: '1.00 AU', desc: 'บ้านของเรา เป็นดาวเคราะห์เพียงดวงเดียวในขณะนี้ที่ยืนยันว่ามีสิ่งมีชีวิต อุดมไปด้วยน้ำในรูปของเหลวและบรรยากาศที่มีออกซิเจน' },
+            { id: 'mars', name: 'ดาวอังคาร (Mars)', color: 'from-red-500 to-amber-700', icon: '🔴', type: 'ดาวเคราะห์หิน', temp: '-60 °C', dist: '1.52 AU', desc: 'ดาวเคราะห์แดง เนื่องจากพื้นผิวเต็มไปด้วยสนิมเหล็ก มีภูเขาไฟโอลิมปัสซึ่งเป็นภูเขาไฟที่สูงที่สุดในระบบสุริยะ' },
+            { id: 'jupiter', name: 'ดาวพฤหัสบดี (Jupiter)', color: 'from-orange-300 to-amber-600', icon: '🪐', type: 'ดาวแก๊สยักษ์', temp: '-110 °C', dist: '5.20 AU', desc: 'ดาวเคราะห์ที่ใหญ่ที่สุดในระบบสุริยะ ใหญ่กว่าโลกกว่า 1,300 เท่า มีจุดแดงใหญ่ที่เป็นพายุหมุนขนาดยักษ์' },
+            { id: 'saturn', name: 'ดาวเสาร์ (Saturn)', color: 'from-yellow-300 to-amber-500', icon: '🪐', type: 'ดาวแก๊สยักษ์', temp: '-140 °C', dist: '9.58 AU', desc: 'โดดเด่นด้วยระบบวงแหวนที่สวยงาม ทำมาจากเศษน้ำแข็งและหินขนาดต่างๆ มีความหนาแน่นต่ำกว่าน้ำ' },
+            { id: 'uranus', name: 'ดาวยูเรนัส (Uranus)', color: 'from-cyan-300 to-blue-400', icon: '💎', type: 'ดาวน้ำแข็งยักษ์', temp: '-195 °C', dist: '19.22 AU', desc: 'ดาวเคราะห์แก๊สน้ำแข็งสีฟ้าอมเขียว มีแกนหมุนเอียงเกือบขนานกับระนาบการโคจร (เอียง 98 องศา)' },
+            { id: 'neptune', name: 'ดาวเนปจูน (Neptune)', color: 'from-blue-600 to-indigo-800', icon: '🔵', type: 'ดาวน้ำแข็งยักษ์', temp: '-200 °C', dist: '30.05 AU', desc: 'ดาวเคราะห์ที่อยู่ห่างไกลที่สุด มีสีฟ้าเข้มสดใส มีกระแสลมพายุพัดแรงที่สุดในระบบสุริยะ' }
         ];
 
-        const C1_I18N = {
-            'title-desc': { 
-                'th': 'เริ่มต้นภารกิจสำรวจระบบสุริยะ! ล่ามอนสเตอร์อวกาศ ฟาร์มแร่ และไขปริศนาดาราศาสตร์แบบ 2 ภาษา (ไทย-อังกฤษ) เพื่อสร้างเครื่องยนต์วาร์ปและปลดล็อกดาวเคราะห์ดวงถัดไป', 
-                'en': 'Embark on a Solar System exploration mission! Hunt space monsters, farm minerals, and solve bilingual astronomy quizzes (TH-EN) to craft warp engines and unlock the next planet.' 
-            },
-            'start-btn': { 'th': 'เริ่มเกม (Start Game)', 'en': 'Start Game' },
-            'reset-save': { 'th': 'รีเซ็ตคะแนนสูงสุด (Reset High Score)', 'en': 'Reset High Score' },
-            'gameOver-desc': { 'th': 'สิ้นสุดภารกิจสำรวจ! คุณทำคะแนนได้:', 'en': 'Mission Over! Your final score is:' },
-            'back-home': { 'th': 'กลับหน้าแรก (Back to Title)', 'en': 'Back to Title' },
-            'crafting-title': { 'th': 'ศูนย์กลางการคราฟต์ / Crafting Center', 'en': 'Crafting Center / ศูนย์กลางการคราฟต์' },
-            'need-text': { 'th': 'ต้องการ:', 'en': 'Requires:' },
-            'craft-btn-text': { 'th': 'คราฟต์เครื่องยนต์วาร์ป (Craft Warp Engine)', 'en': 'Craft Warp Engine' },
-            'close-btn': { 'th': 'ปิด (Close)', 'en': 'Close' },
+        function initExplorer() {
+            const btnContainer = document.getElementById('planet-buttons');
+            btnContainer.innerHTML = '';
+            
+            planetsData.forEach((p, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-xl border border-slate-800 bg-slate-900 hover:border-cyan-500/50 hover:bg-slate-800 flex flex-col items-center gap-1 transition-all text-center ${idx === 3 ? 'border-cyan-500 bg-slate-800 ring-2 ring-cyan-500/30' : ''}`;
+                btn.onclick = () => selectPlanet(p, btn);
+                btn.innerHTML = `
+                    <span class="text-2xl">${p.icon}</span>
+                    <span class="text-xs font-semibold text-slate-200">${p.name.split(' ')[0]}</span>
+                `;
+                btnContainer.appendChild(btn);
+            });
+
+            selectPlanet(planetsData[3], btnContainer.children[3]);
+        }
+
+        function selectPlanet(planet, btnEl) {
+            document.querySelectorAll('#planet-buttons button').forEach(b => {
+                b.className = b.className.replace('border-cyan-500 bg-slate-800 ring-2 ring-cyan-500/30', 'border-slate-800 bg-slate-900');
+            });
+            if(btnEl) {
+                btnEl.className = btnEl.className.replace('border-slate-800 bg-slate-900', 'border-cyan-500 bg-slate-800 ring-2 ring-cyan-500/30');
+            }
+
+            const detailBox = document.getElementById('planet-detail');
+            detailBox.innerHTML = `
+                <div class="md:col-span-4 flex flex-col items-center justify-center p-6 bg-gradient-to-br ${planet.color} rounded-2xl shadow-inner text-center">
+                    <span class="text-7xl mb-2 filter drop-shadow-lg">${planet.icon}</span>
+                    <h3 class="text-2xl font-bold text-white">${planet.name}</h3>
+                    <span class="text-xs bg-black/40 text-white px-3 py-1 rounded-full mt-2">${planet.type}</span>
+                </div>
+                <div class="md:col-span-8 space-y-4">
+                    <p class="text-slate-300 text-sm leading-relaxed">${planet.desc}</p>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 block">อุณหภูมิเฉลี่ย</span>
+                            <span class="text-base font-bold text-amber-400">${planet.temp}</span>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 block">ระยะห่างจากดวงอาทิตย์</span>
+                            <span class="text-base font-bold text-cyan-400">${planet.dist}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* -------------------------------------------------------------
+           2. EASY AIM & SHOOT SPACE GAME MODULE
+        ------------------------------------------------------------- */
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let gameRunning = false;
+        let score = 0;
+        let hp = 3;
+        let animationFrameId;
+
+        const player = {
+            x: 0,
+            y: 0,
+            size: 22,
+            angle: 0,
+            speed: 5
         };
 
-        const QUIZ_QUESTIONS = [
-            { 
-                th: "ดาวเคราะห์ดวงใดอยู่ใกล้ดวงอาทิตย์ที่สุด?", 
-                en: "Which planet is closest to the Sun?", 
-                options: [
-                    { th: "ดาวพุธ", en: "Mercury", key: 'a' }, 
-                    { th: "ดาวศุกร์", en: "Venus", key: 'b' }, 
-                    { th: "โลก", en: "Earth", key: 'c' }, 
-                    { th: "ดาวอังคาร", en: "Mars", key: 'd' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "ดาวเคราะห์ดวงใดใหญ่ที่สุดในระบบสุริยะ?", 
-                en: "Which is the largest planet in our Solar System?", 
-                options: [
-                    { th: "ดาวพฤหัสบดี", en: "Jupiter", key: 'a' }, 
-                    { th: "ดาวเสาร์", en: "Saturn", key: 'b' }, 
-                    { th: "ดาวยูเรนัส", en: "Uranus", key: 'c' }, 
-                    { th: "ดาวเนปจูน", en: "Neptune", key: 'd' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "ดวงอาทิตย์จัดเป็นวัตถุท้องฟ้าประเภทใด?", 
-                en: "What type of celestial body is the Sun?", 
-                options: [
-                    { th: "ดาวฤกษ์ (Star)", en: "Star", key: 'a' }, 
-                    { th: "ดาวเคราะห์ (Planet)", en: "Planet", key: 'b' },
-                    { th: "ดาวหาง (Comet)", en: "Comet", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "ดาวอังคารมักถูกเรียกว่าอะไร?", 
-                en: "Mars is often referred to as which planet?", 
-                options: [
-                    { th: "ดาวเคราะห์สีแดง (Red Planet)", en: "Red Planet", key: 'a' }, 
-                    { th: "ดาวเคราะห์สีน้ำเงิน (Blue Planet)", en: "Blue Planet", key: 'b' }, 
-                    { th: "ดาวเคราะห์ยักษ์แก๊ส (Gas Giant)", en: "Gas Giant", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "ดาวเคราะห์ดวงใดมีวงแหวนที่โดดเด่นและสวยงามที่สุด?", 
-                en: "Which planet is famous for its prominent ring system?", 
-                options: [
-                    { th: "ดาวเสาร์", en: "Saturn", key: 'a' }, 
-                    { th: "ดาวอังคาร", en: "Mars", key: 'b' }, 
-                    { th: "ดาวพุธ", en: "Mercury", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "ดาวเคราะห์ดวงใดร้อนที่สุดในระบบสุริยะ?", 
-                en: "Which planet is the hottest in our Solar System?", 
-                options: [
-                    { th: "ดาวศุกร์", en: "Venus", key: 'a' }, 
-                    { th: "ดาวพุธ", en: "Mercury", key: 'b' }, 
-                    { th: "โลก", en: "Earth", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "โลกอยู่เป็นลำดับที่เท่าไรจากดวงอาทิตย์?", 
-                en: "Earth is the ____ planet from the Sun.", 
-                options: [
-                    { th: "ลำดับที่ 3 (3rd)", en: "3rd", key: 'a' }, 
-                    { th: "ลำดับที่ 1 (1st)", en: "1st", key: 'b' }, 
-                    { th: "ลำดับที่ 5 (5th)", en: "5th", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "คำว่า 'ระบบสุริยะ' ในภาษาอังกฤษคืออะไร?", 
-                en: "What is the English term for 'ระบบสุริยะ'?", 
-                options: [
-                    { th: "Solar System", en: "Solar System", key: 'a' }, 
-                    { th: "Milky Way", en: "Milky Way", key: 'b' }, 
-                    { th: "Universe", en: "Universe", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "ดาวเคราะห์ดวงใดได้ชื่อว่าเป็นดาวเคราะห์แห่งผืนน้ำสีฟ้า?", 
-                en: "Which planet is known as the 'Blue Planet'?", 
-                options: [
-                    { th: "โลก (Earth)", en: "Earth", key: 'a' }, 
-                    { th: "ดาวเนปจูน (Neptune)", en: "Neptune", key: 'b' }, 
-                    { th: "ดาวเสาร์ (Saturn)", en: "Saturn", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            },
-            { 
-                th: "อุณหภูมิพื้นผิวโดยเฉลี่ยของดวงอาทิตย์อยู่ที่ประมาณเท่าใด?", 
-                en: "What is the approximate surface temperature of the Sun?", 
-                options: [
-                    { th: "5,500 °C", en: "5,500 °C", key: 'a' }, 
-                    { th: "1,000 °C", en: "1,000 °C", key: 'b' }, 
-                    { th: "100,000 °C", en: "100,000 °C", key: 'c' }
-                ], 
-                correctKey: 'a' 
-            }
-        ];
+        const keys = {};
+        let lasers = [];
+        let enemies = [];
+        let particles = [];
+        let spawnTimer = 0;
+        let isFiring = false;
+        let fireCooldown = 0;
 
-        // --- Core Objects ---
-        let canvas, ctx; let currentLang = 'th'; let highScores = {};
-        const audio = new WebAudioSynthesizer(); const ui = new UIManager(); const input = new GameInput(); let player, mobileControls;
-        let monsters = []; let minerals = []; let lasers = []; let particles = []; let grid = [];
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            if(!gameRunning) {
+                player.x = canvas.width / 2;
+                player.y = canvas.height / 2;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
 
-        const gameState = {
-            currentScene: 'title', planetIdx: 0, currentPlanetSymbol: '☀️',
-            time: 0, score: 0, mineralCount: 0, tokenCount: 0, currentHigh: 0,
-            activeQuizIndex: -1, quizActive: false, gamePaused: false,
-        };
-
-        // --- Classes ---
-
-        class UIManager {
-            constructor() { 
-                this.hud = document.getElementById('hud'); 
-                this.craftingModal = document.getElementById('crafting-modal'); 
-                this.mobileControls = document.getElementById('mobile-controls'); 
-            }
-            update() {
-                if (gameState.currentScene === 'game' && !gameState.gamePaused) {
-                    this.hud.classList.remove('hidden');
-                    const currentP = PLANETS[gameState.planetIdx];
-                    document.getElementById('player-planet').innerText = currentLang === 'th' ? `${currentP.nameEn} (${currentP.nameTh})` : `${currentP.nameEn}`;
-                    document.getElementById('player-health').innerText = player.health;
-                    document.getElementById('game-time').innerText = this.formatTime(gameState.time);
-                    document.getElementById('game-score').innerText = gameState.score;
-                    document.getElementById('mineral-count').innerText = gameState.mineralCount;
-                    document.getElementById('token-count').innerText = gameState.tokenCount;
-                    document.getElementById('token-icon').innerText = currentP.symbol;
-
-                    const craftBtn = document.getElementById('craft-btn');
-                    if (!player.craftedWarpEngine && gameState.planetIdx < PLANETS.length - 1) {
-                        document.getElementById('need-token-icon').innerText = currentP.symbol;
-                        craftBtn.disabled = !(gameState.mineralCount >= 5 && gameState.tokenCount >= 3);
-                        craftBtn.innerText = currentLang === 'th' ? "คราฟต์เครื่องยนต์วาร์ป (Craft Warp Engine)" : "Craft Warp Engine";
-                    } else if (player.craftedWarpEngine) {
-                        craftBtn.disabled = true;
-                        craftBtn.innerText = currentLang === 'th' ? "ปลดล็อกวาร์ปแล้ว (Warp Unlocked)" : "Warp Engine Unlocked";
-                    } else {
-                        craftBtn.disabled = true;
-                        craftBtn.innerText = currentLang === 'th' ? "ถึงดาวเคราะห์สุดท้ายแล้ว (Final Planet)" : "Final Planet Reached";
-                    }
-                } else { this.hud.classList.add('hidden'); }
-            }
-            openCraftingQuizModal() {
-                if (player.craftedWarpEngine) {
-                    alert(currentLang === 'th' ? 'ปลดล็อกเครื่องยนต์วาร์ปแล้ว!' : 'Warp engine already crafted!');
-                    return;
-                }
-                if (gameState.activeQuizIndex < 0) this.setNextQuiz();
-                gameState.quizActive = true; gameState.gamePaused = true;
-                this.mobileControls.classList.add('hidden');
-                this.craftingModal.classList.remove('hidden'); this.displayQuiz();
-            }
-            closeCraftingQuizModal() {
-                gameState.quizActive = false; gameState.gamePaused = false;
-                this.mobileControls.classList.remove('hidden');
-                this.craftingModal.classList.add('hidden');
-            }
-            setNextQuiz() { gameState.activeQuizIndex = Math.floor(Math.random() * QUIZ_QUESTIONS.length); }
-            displayQuiz() {
-                const quiz = QUIZ_QUESTIONS[gameState.activeQuizIndex];
-                const qP = document.getElementById('quiz-question');
-                qP.innerText = currentLang === 'th' ? `${quiz.th}` : `${quiz.en}`;
-                const optsDiv = document.getElementById('quiz-options'); optsDiv.innerHTML = '';
-                quiz.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.innerText = currentLang === 'th' ? `${opt.th}` : `${opt.en}`;
-                    btn.onclick = () => ui.answerQuiz(opt.key);
-                    optsDiv.appendChild(btn);
-                });
-            }
-            answerQuiz(selectedKey) {
-                const quiz = QUIZ_QUESTIONS[gameState.activeQuizIndex];
-                const optsDiv = document.getElementById('quiz-options');
-                if (selectedKey === quiz.correctKey) {
-                    Array.from(optsDiv.children).forEach(b => b.classList.add('hidden'));
-                    const msg = currentLang === 'th' ? 'ถูกต้อง! (+1 ' : 'Correct! (+1 ';
-                    optsDiv.innerHTML = `<p style="color:var(--success)">${msg}<span id="reward-icon"></span>)</p>`;
-                    document.getElementById('reward-icon').innerText = PLANETS[gameState.planetIdx].symbol;
-                    gameState.tokenCount++; gameState.score += 50; audio.playSuccess(); ui.update();
-                    this.setNextQuiz();
-                    setTimeout(() => { this.closeCraftingQuizModal(); }, 1200);
-                } else { audio.playHit(); }
-            }
-            formatTime(seconds) { const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s < 10 ? '0' : ''}${s}`; }
-            showGameOver() { document.getElementById('final-score').innerText = gameState.score; }
+        // Aim & Shoot Input Handler (Click/Touch anywhere to aim & shoot)
+        function handlePointerInput(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const targetX = (clientX - rect.left) * (canvas.width / rect.width);
+            const targetY = (clientY - rect.top) * (canvas.height / rect.height);
+            
+            player.angle = Math.atan2(targetY - player.y, targetX - player.x);
         }
 
-        class GameInput {
-            constructor() { this.keys = {}; canvas.onpointerdown = (e) => this.handlePointer(e); canvas.onpointerup = () => this.firing = false; }
-            handlePointer(e) {
-                if (gameState.currentScene !== 'game' || gameState.gamePaused) return;
-                this.pointerX = e.offsetX; this.pointerY = e.offsetY; this.firing = true; this.fireInstant = true;
+        canvas.addEventListener('mousedown', (e) => {
+            if (!gameRunning) return;
+            isFiring = true;
+            handlePointerInput(e.clientX, e.clientY);
+            triggerShot();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!gameRunning) return;
+            handlePointerInput(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', () => { isFiring = false; });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (!gameRunning) return;
+            e.preventDefault();
+            isFiring = true;
+            const touch = e.touches[0];
+            handlePointerInput(touch.clientX, touch.clientY);
+            triggerShot();
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!gameRunning) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            handlePointerInput(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        window.addEventListener('touchend', () => { isFiring = false; });
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space' && gameRunning) {
+                isFiring = true;
+                triggerShot();
             }
-            isPressed(key) { return this.keys[key]; }
-            update() {
-                if (gameState.currentScene !== 'game' || gameState.gamePaused) return;
+        });
 
-                if (this.firing) { player.fire(this.pointerX, this.pointerY, this.fireInstant); this.fireInstant = false; }
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            if (e.code === 'Space') isFiring = false;
+        });
 
-                if (mobileControls) { player.ax = mobileControls.getVector().x * 3; player.ay = mobileControls.getVector().y * 3; } else {
-                    player.ax = (this.isPressed('a') || this.isPressed('ArrowLeft') ? -3 : 0) + (this.isPressed('d') || this.isPressed('ArrowRight') ? 3 : 0);
-                    player.ay = (this.isPressed('w') || this.isPressed('ArrowUp') ? -3 : 0) + (this.isPressed('s') || this.isPressed('ArrowDown') ? 3 : 0);
-                }
+        function triggerShot() {
+            if (fireCooldown <= 0) {
+                shootLaser();
+                fireCooldown = 9; // Delay between auto shots
             }
         }
 
-        class MobileJoystickFireBtn {
-            constructor() {
-                this.outer = document.getElementById('joystick-outer'); this.inner = document.getElementById('joystick-inner'); this.fireBtn = document.getElementById('mobile-fire-btn');
-                this.vX = 0; this.vY = 0; this.maxRadius = 60; this.isMoving = false;
-                this.inner.addEventListener('touchstart', (e) => { e.preventDefault(); this.isMoving = true; });
-                window.addEventListener('touchend', () => { this.isMoving = false; this.inner.style.inset = "30px"; this.vX = 0; this.vY = 0; });
-                window.addEventListener('touchmove', (e) => {
-                    if (!this.isMoving || gameState.currentScene !== 'game' || gameState.gamePaused) return;
-                    e.preventDefault(); const touch = e.touches[0];
-                    const outR = this.outer.getBoundingClientRect(); const centerX = outR.left + 60; const centerY = outR.top + 60;
-                    let dx = touch.clientX - centerX; let dy = touch.clientY - centerY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist > this.maxRadius) { dx = (dx / dist) * this.maxRadius; dy = (dy / dist) * this.maxRadius; }
-                    this.inner.style.inset = `calc(30px + ${dy / 2}px) calc(30px - ${dx / 2}px) calc(30px - ${dy / 2}px) calc(30px + ${dx / 2}px)`;
-                    this.vX = dx / this.maxRadius; this.vY = dy / this.maxRadius;
-                });
-                this.fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); input.pointerX = player.x; input.pointerY = player.y; input.firing = true; input.fireInstant = true; });
-                window.addEventListener('touchend', () => input.firing = false);
-            }
-            getVector() { return { x: this.vX, y: this.vY }; }
-            update() { document.getElementById('app').classList.toggle('mobile-fire-active', input.firing); }
-        }
-
-        class Player {
-            constructor() {
-                this.x = CANVAS_WIDTH / 2; this.y = CANVAS_HEIGHT / 2; this.ax = 0; this.ay = 0; this.vx = 0; this.vy = 0;
-                this.health = 100; this.lastFire = 0; this.fireCooldown = 5;
-                this.craftedWarpEngine = false; this.invulnerableUntil = 0;
-            }
-            update() {
-                if (gameState.gamePaused) return;
-                this.vx += this.ax * 0.1; this.vy += this.ay * 0.1; this.vx *= 0.95; this.vy *= 0.95; this.x += this.vx; this.y += this.vy;
-                this.x = Math.max(PLAYER_SIZE, Math.min(CANVAS_WIDTH - PLAYER_SIZE, this.x)); this.y = Math.max(PLAYER_SIZE, Math.min(CANVAS_HEIGHT - PLAYER_SIZE, this.y));
-                this.checkCollisionWithMinerals(); this.checkCollisionWithWarp(); this.checkCollisionWithMonsters();
-                this.updateInvulnerabilityVisual();
-            }
-            draw() {
-                ctx.save(); ctx.translate(this.x, this.y);
-                if (this.isInvulnerable() && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5;
-                if (mobileControls) ctx.rotate(Math.atan2(mobileControls.getVector().y, mobileControls.getVector().x));
-                ctx.font = `${PLAYER_SIZE}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('👨‍🚀', 0, 0); ctx.restore();
-            }
-            fire(targetX, targetY, isInstant = false) {
-                if (!isInstant && Date.now() - this.lastFire < this.fireCooldown) return;
-                const canvasRect = canvas.getBoundingClientRect(); const relTargetX = targetX / canvasRect.width * CANVAS_WIDTH; const relTargetY = targetY / canvasRect.height * CANVAS_HEIGHT;
-                lasers.push(new PlayerLaser(this.x, this.y, relTargetX, relTargetY)); this.lastFire = Date.now(); audio.playLaser();
-            }
-            checkCollisionWithMinerals() {
-                const gridCoords = worldToGrid(this.x, this.y);
-                if (!gridCoords) return;
-                minerals.forEach((mineral) => {
-                    if (mineral.alive) {
-                        const mGridCoords = worldToGrid(mineral.x, mineral.y);
-                        if (gridCoords.gridX === mGridCoords.gridX && gridCoords.gridY === mGridCoords.gridY) {
-                            mineral.alive = false; gameState.mineralCount++; gameState.score += 20; audio.playPickup(); ui.update();
-                        }
-                    }
-                });
-            }
-            checkCollisionWithMonsters() {
-                if (gameState.gamePaused || this.isInvulnerable()) return;
-                monsters.forEach(m => {
-                    if (m.alive && Math.abs(this.x - m.x) < (PLAYER_SIZE + MONSTER_SIZE) / 2 && Math.abs(this.y - m.y) < (PLAYER_SIZE + MONSTER_SIZE) / 2) {
-                        this.health = Math.max(0, this.health - 1);
-                        audio.playDamage(); ui.update();
-                        this.makeInvulnerable();
-                        if (this.health <= 0) gameOver();
-                    }
-                });
-            }
-            checkCollisionWithWarp() {
-                if (this.craftedWarpEngine) {
-                    const gridCoords = worldToGrid(this.x, this.y);
-                    if (gridCoords.gridX === grid.length - 1 && gridCoords.gridY === grid[0].length - 1) { warpToNextPlanet(); }
-                }
-            }
-            isInvulnerable() { return Date.now() < this.invulnerableUntil; }
-            makeInvulnerable() { this.invulnerableUntil = Date.now() + PLAYER_I_FRAMES_DURATION; }
-            updateInvulnerabilityVisual() {
-                if (this.isInvulnerable() && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5; else ctx.globalAlpha = 1;
-            }
-        }
-
-        class PlayerLaser {
-            constructor(startX, startY, targetX, targetY) {
-                this.x = startX; this.y = startY;
-                const angle = Math.atan2(targetY - startY, targetX - startX);
-                this.dx = Math.cos(angle) * LASER_SPEED;
-                this.dy = Math.sin(angle) * LASER_SPEED;
-                this.alive = true;
-            }
-            update() { this.x += this.dx; this.y += this.dy; if (this.x < 0 || this.x > CANVAS_WIDTH || this.y < 0 || this.y > CANVAS_HEIGHT) this.alive = false; this.checkCollisionWithMonsters(); }
-            draw() { ctx.fillStyle = varColor('--accent'); ctx.fillRect(this.x - 5, this.y - 10, 10, 20); }
-            checkCollisionWithMonsters() {
-                monsters.forEach(m => {
-                    if (m.alive && Math.abs(this.x - m.x) < MONSTER_SIZE / 2 && Math.abs(this.y - m.y) < MONSTER_SIZE / 2) {
-                        m.alive = false; gameState.score += 50; audio.playHit(); this.alive = false; ui.update(); spawnMineralAt(m.x, m.y);
-                    }
-                });
-            }
-        }
-
-        class Monster {
-            constructor(x, y) { this.x = x; this.y = y; this.alive = true; this.lastMove = Date.now(); this.moveTimer = Math.random() * (MONSTER_MOVE_TIMER_MAX - MONSTER_MOVE_TIMER_MIN) + MONSTER_MOVE_TIMER_MIN; }
-            update() { if (gameState.gamePaused) return; if (Date.now() - this.lastMove > this.moveTimer) { this.moveGrid(); this.lastMove = Date.now(); this.moveTimer = Math.random() * (MONSTER_MOVE_TIMER_MAX - MONSTER_MOVE_TIMER_MIN) + MONSTER_MOVE_TIMER_MIN; } }
-            draw() { ctx.font = `${MONSTER_SIZE}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('👾', this.x, this.y); }
-            moveGrid() {
-                const curCoords = worldToGrid(this.x, this.y); if (!curCoords) return;
-                const dirs = [{ x: -1, y: 0 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 1 }, { x: 0, y: 0 }];
-                const dir = dirs[Math.floor(Math.random() * dirs.length)];
-                const newX = curCoords.gridX + dir.x; const newY = curCoords.gridY + dir.y;
-                if (newX >= 0 && newX < grid.length && newY >= 0 && newY < grid[0].length && grid[newX][newY] === 0) {
-                    grid[curCoords.gridX][curCoords.gridY] = 0; grid[newX][newY] = 2;
-                    this.x = newX * GRID_SIZE + GRID_SIZE / 2; this.y = newY * GRID_SIZE + GRID_SIZE / 2;
-                }
-            }
-        }
-
-        class Mineral { constructor(x, y) { this.x = x; this.y = y; this.alive = true; } update() { } draw() { ctx.font = `${MINERAL_SIZE}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('💎', this.x, this.y); } }
-
-        // --- Grid Utilities ---
-        function worldToGrid(wX, wY) { const gX = Math.floor(wX / GRID_SIZE); const gY = Math.floor(wY / GRID_SIZE); if (gX < 0 || gX >= grid.length || gY < 0 || gY >= grid[0].length) return null; return { gridX: gX, gridY: gY }; }
-
-        // --- Drawing Surface ---
-        function drawPlanetarySurface() {
-            const planet = PLANETS[gameState.planetIdx]; ctx.fillStyle = planet.colorSurface; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-            if (grid && grid.length > 0) {
-                ctx.strokeStyle = varColor('--grid'); ctx.lineWidth = 1;
-                for (let x = 0; x < grid.length; x++) { for (let y = 0; y < grid[0].length; y++) { ctx.strokeRect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE); if (grid[x][y] === 1) { ctx.fillStyle = varColor('--text-muted'); ctx.fillRect(x * GRID_SIZE + 5, y * GRID_SIZE + 5, GRID_SIZE - 10, GRID_SIZE - 10); } } }
-                if (player.craftedWarpEngine) { ctx.font = `${GRID_SIZE}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('✨🌀👨‍🚀', (grid.length - 1) * GRID_SIZE + GRID_SIZE / 2, (grid[0].length - 1) * GRID_SIZE + GRID_SIZE / 2); }
-            }
-        }
-
-        // --- Core Functions ---
-
-        function init() {
-            canvas = document.getElementById('gameCanvas'); ctx = canvas.getContext('2d'); canvas.width = CANVAS_WIDTH; canvas.height = CANVAS_HEIGHT;
-            window.addEventListener('keydown', (e) => { input.keys[e.key] = true; if (e.key === 'q' || e.key === 'e') ui.openCraftingQuizModal(); });
-            window.addEventListener('keyup', (e) => input.keys[e.key] = false);
-            if ('ontouchstart' in window) { document.getElementById('app').classList.add('mobile'); mobileControls = new MobileJoystickFireBtn(); }
-            audio.init(); loadSaveData(); toggleLang('th'); initTitleScene(); requestAnimationFrame(update);
-        }
-
-        function initTitleScene() {
-            gameState.currentScene = 'title'; gameState.planetIdx = 0; gameState.currentHigh = highScores.currentPlanet || 0;
-            document.getElementById('title-scene').classList.remove('hidden'); document.getElementById('gameover-scene').classList.add('hidden');
-            audio.stopBGM(); ui.update();
+        function shootLaser() {
+            const speed = 14;
+            lasers.push({
+                x: player.x + Math.cos(player.angle) * player.size,
+                y: player.y + Math.sin(player.angle) * player.size,
+                vx: Math.cos(player.angle) * speed,
+                vy: Math.sin(player.angle) * speed,
+                radius: 4
+            });
         }
 
         function startGame() {
-            document.getElementById('title-scene').classList.add('hidden');
-            document.getElementById('hud').classList.remove('hidden');
-            gameState.currentScene = 'game'; gameState.time = 0; gameState.score = 0; gameState.mineralCount = 0; gameState.tokenCount = 0;
-            player = new Player(); mobileControls && (mobileControls = new MobileJoystickFireBtn());
-            initPlanet(0); audio.playBGM();
+            resizeCanvas();
+            gameRunning = true;
+            score = 0;
+            hp = 3;
+            lasers = [];
+            enemies = [];
+            particles = [];
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            
+            document.getElementById('game-score').innerText = score;
+            document.getElementById('game-hp').innerText = '❤️'.repeat(hp);
+            document.getElementById('game-overlay').classList.add('hidden');
+
+            cancelAnimationFrame(animationFrameId);
+            gameLoop();
         }
 
         function gameOver() {
-            gameState.currentScene = 'gameOver'; audio.stopBGM(); audio.playGameOver();
-            document.getElementById('hud').classList.add('hidden'); document.getElementById('gameover-scene').classList.remove('hidden'); ui.showGameOver(); saveGameData();
+            gameRunning = false;
+            document.getElementById('overlay-title').innerText = 'จบเกม (GAME OVER)';
+            document.getElementById('overlay-desc').innerText = `ทำคะแนนได้ทั้งหมด ${score} คะแนน!`;
+            document.getElementById('game-overlay').classList.remove('hidden');
         }
 
-        function update() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawPlanetarySurface();
+        function createExplosion(x, y, color) {
+            for(let i = 0; i < 15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    radius: Math.random() * 4 + 1,
+                    alpha: 1,
+                    color: color || '#f97316'
+                });
+            }
+        }
 
-            if (gameState.currentScene === 'game' && !gameState.gamePaused) {
-                gameState.time += 16.67 / 1000;
-                input.update(); player.update(); lasers.forEach(l => l.update()); updateParticles();
-                monsters.forEach(m => m.update()); minerals.forEach(min => min.update());
-                monsters = monsters.filter(m => m.alive); minerals = minerals.filter(min => min.alive); lasers = lasers.filter(l => l.alive);
-                ui.update();
+        function gameLoop() {
+            if(!gameRunning) return;
 
-                // Draw game entities
-                lasers.forEach(l => l.draw()); minerals.forEach(min => min.draw()); monsters.forEach(m => m.draw()); player.draw(); drawParticles();
-            } else if (gameState.currentScene === 'gameOver') { 
-                ctx.fillStyle = varColor('--danger'); ctx.font = '70px sans-serif'; ctx.textAlign = 'center'; 
-                ctx.fillText('Game Over', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2); 
+            // Clear Background
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Stars
+            ctx.fillStyle = '#ffffff';
+            for(let i=0; i<30; i++) {
+                ctx.fillRect((i*37)%canvas.width, (i*53)%canvas.height, (i%2)+1, (i%2)+1);
             }
 
-            requestAnimationFrame(update);
-        }
+            // Continuous Firing when holding down
+            if (fireCooldown > 0) fireCooldown--;
+            if (isFiring && fireCooldown <= 0) {
+                triggerShot();
+            }
 
-        function initPlanet(planetIdx) {
-            gameState.planetIdx = planetIdx; const planet = PLANETS[planetIdx]; player.craftedWarpEngine = false;
-            const gridW = Math.floor(CANVAS_WIDTH / GRID_SIZE); const gridH = Math.floor(CANVAS_HEIGHT / GRID_SIZE);
-            grid = Array.from({ length: gridW }, () => Array(gridH).fill(0));
+            // Player Keyboard Movement
+            let dx = 0, dy = 0;
+            if (keys['ArrowUp'] || keys['KeyW']) dy -= 1;
+            if (keys['ArrowDown'] || keys['KeyS']) dy += 1;
+            if (keys['ArrowLeft'] || keys['KeyA']) dx -= 1;
+            if (keys['ArrowRight'] || keys['KeyD']) dx += 1;
+
+            if (dx !== 0 || dy !== 0) {
+                player.x += dx * player.speed;
+                player.y += dy * player.speed;
+            }
+
+            // Keep player inside canvas
+            player.x = Math.max(player.size, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(player.size, Math.min(canvas.height - player.size, player.y));
+
+            // Draw Player Ship
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+
+            ctx.fillStyle = '#06b6d4';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
             
-            for (let i = 0; i < gridW * gridH * 0.1; i++) {
-                const ox = Math.floor(Math.random() * gridW); const oy = Math.floor(Math.random() * gridH);
-                if (ox > 1 && oy > 1 && ox < gridW - 2 && oy < gridH - 2) grid[ox][oy] = 1;
+            ctx.beginPath();
+            ctx.moveTo(player.size, 0);
+            ctx.lineTo(-player.size * 0.7, -player.size * 0.6);
+            ctx.lineTo(-player.size * 0.4, 0);
+            ctx.lineTo(-player.size * 0.7, player.size * 0.6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+
+            // Spawn Enemies
+            spawnTimer++;
+            if(spawnTimer > 40) {
+                spawnTimer = 0;
+                const side = Math.floor(Math.random() * 4);
+                let ex, ey;
+                if(side === 0) { ex = Math.random() * canvas.width; ey = -20; }
+                else if(side === 1) { ex = canvas.width + 20; ey = Math.random() * canvas.height; }
+                else if(side === 2) { ex = Math.random() * canvas.width; ey = canvas.height + 20; }
+                else { ex = -20; ey = Math.random() * canvas.height; }
+
+                const angleToPlayer = Math.atan2(player.y - ey, player.x - ex);
+                const speed = Math.random() * 1.5 + 1.2;
+
+                enemies.push({
+                    x: ex,
+                    y: ey,
+                    vx: Math.cos(angleToPlayer) * speed,
+                    vy: Math.sin(angleToPlayer) * speed,
+                    radius: Math.random() * 12 + 14,
+                    color: Math.random() > 0.4 ? '#ef4444' : '#a855f7'
+                });
             }
-            
-            monsters = [];
-            for (let i = 0; i < planet.monsterCount; i++) {
-                let mx, my;
-                do { mx = Math.floor(Math.random() * gridW); my = Math.floor(Math.random() * gridH); } while (grid[mx][my] !== 0);
-                grid[mx][my] = 2;
-                monsters.push(new Monster(mx * GRID_SIZE + GRID_SIZE / 2, my * GRID_SIZE + GRID_SIZE / 2));
+
+            // Update & Draw Lasers
+            for(let i = lasers.length - 1; i >= 0; i--) {
+                const l = lasers[i];
+                l.x += l.vx;
+                l.y += l.vy;
+
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(l.x, l.y, l.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                if(l.x < 0 || l.x > canvas.width || l.y < 0 || l.y > canvas.height) {
+                    lasers.splice(i, 1);
+                }
             }
-            minerals = []; lasers = [];
-            spawnMineralAt(CANVAS_WIDTH * 0.8, CANVAS_HEIGHT * 0.8);
+
+            // Update & Draw Enemies (1-Hit Kill)
+            for(let eIdx = enemies.length - 1; eIdx >= 0; eIdx--) {
+                const enemy = enemies[eIdx];
+                enemy.x += enemy.vx;
+                enemy.y += enemy.vy;
+
+                ctx.fillStyle = enemy.color;
+                ctx.beginPath();
+                ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Check Laser Collision
+                for(let lIdx = lasers.length - 1; lIdx >= 0; lIdx--) {
+                    const l = lasers[lIdx];
+                    const dist = Math.hypot(enemy.x - l.x, enemy.y - l.y);
+                    
+                    if(dist < enemy.radius + l.radius) {
+                        createExplosion(enemy.x, enemy.y, enemy.color);
+                        enemies.splice(eIdx, 1);
+                        lasers.splice(lIdx, 1);
+                        score += 10;
+                        document.getElementById('game-score').innerText = score;
+                        break;
+                    }
+                }
+
+                // Check Player Collision
+                if(enemies[eIdx]) {
+                    const distToPlayer = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+                    if(distToPlayer < enemy.radius + player.size * 0.7) {
+                        createExplosion(enemy.x, enemy.y, '#f43f5e');
+                        enemies.splice(eIdx, 1);
+                        hp--;
+                        document.getElementById('game-hp').innerText = '❤️'.repeat(Math.max(0, hp));
+                        
+                        if(hp <= 0) {
+                            gameOver();
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // Explosions
+            for(let pIdx = particles.length - 1; pIdx >= 0; pIdx--) {
+                const p = particles[pIdx];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.03;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                if(p.alpha <= 0) particles.splice(pIdx, 1);
+            }
+
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
 
-        function spawnMineralAt(x, y) { minerals.push(new Mineral(x, y)); }
+        /* -------------------------------------------------------------
+           3. QUIZ MODULE
+        ------------------------------------------------------------- */
+        const quizData = [
+            { q: 'ข้อใดคือดาวเคราะห์ที่อยู่ใกล้ดวงอาทิตย์มากที่สุด?', opts: ['ดาวศุกร์', 'ดาวพุธ', 'โลก', 'ดาวอังคาร'], ans: 1 },
+            { q: 'ดาวเคราะห์ดวงใดได้ชื่อว่าเป็น "ดาวเคราะห์แดง"?', opts: ['ดาวพฤหัสบดี', 'ดาวเสาร์', 'ดาวอังคาร', 'ดาวพุธ'], ans: 2 },
+            { q: 'ดาวเคราะห์ดวงใดมีความหนาแน่นต่ำที่สุดจนสามารถลอยน้ำได้?', opts: ['ดาวเสาร์', 'ดาวยูเรนัส', 'ดาวเนปจูน', 'ดาวพฤหัสบดี'], ans: 0 },
+            { q: 'ศูนย์กลางของระบบสุริยะจัดเป็นดาวประเภทใด?', opts: ['ดาวเคราะห์หิน', 'ดาวเคราะห์แก๊ส', 'ดาวฤกษ์', 'ดาวหาง'], ans: 2 },
+            { q: 'จุดแดงใหญ่ (Great Red Spot) เป็นปรากฏการณ์พายุบนดาวดวงใด?', opts: ['ดาวเสาร์', 'ดาวพฤหัสบดี', 'ดาวศุกร์', 'ดาวเนปจูน'], ans: 1 }
+        ];
 
-        function craftWarpEngine() {
-            if (gameState.mineralCount >= 5 && gameState.tokenCount >= 3) {
-                gameState.mineralCount -= 5; gameState.tokenCount -= 3; player.craftedWarpEngine = true; audio.playWarp(); ui.update();
-            }
+        let qIdx = 0;
+        let qScore = 0;
+
+        function initQuiz() {
+            qIdx = 0;
+            qScore = 0;
+            showQuestion();
         }
 
-        function warpToNextPlanet() {
-            gameState.score += 500;
-            if (gameState.planetIdx < PLANETS.length - 1) { 
-                initPlanet(gameState.planetIdx + 1); audio.playPickup(); ui.update(); 
-            } else {
-                gameOver(); 
-                alert(currentLang === 'th' ? 'ชนะ! สำรวจระบบสุริยะสำเร็จแล้ว!' : 'Victory! Solar System Exploration Completed!');
-            }
-        }
+        function showQuestion() {
+            const item = quizData[qIdx];
+            document.getElementById('quiz-num').innerText = qIdx + 1;
+            document.getElementById('quiz-score').innerText = qScore;
+            document.getElementById('quiz-question').innerText = item.q;
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('btn-next-quiz').classList.add('hidden');
 
-        // --- I18n ---
-        function toggleLang(lang) {
-            currentLang = lang;
-            Object.keys(C1_I18N).forEach(key => {
-                const el = document.querySelector(`[data-key="${key}"]`);
-                if (el) el.innerText = C1_I18N[key][lang];
+            const optsBox = document.getElementById('quiz-options');
+            optsBox.innerHTML = '';
+
+            item.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-3.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-purple-500 hover:bg-slate-800 transition-all text-sm font-medium text-slate-200';
+                btn.onclick = () => checkAnswer(idx, btn);
+                btn.innerText = `${idx + 1}. ${opt}`;
+                optsBox.appendChild(btn);
             });
-            
-            const btnTH = document.getElementById('btn-lang-th');
-            const btnEN = document.getElementById('btn-lang-en');
-            btnTH.style.background = lang === 'th' ? varColor('--accent') : 'transparent';
-            btnTH.style.color = lang === 'th' ? varColor('--primary') : varColor('--accent');
-            btnEN.style.background = lang === 'en' ? varColor('--accent') : 'transparent';
-            btnEN.style.color = lang === 'en' ? varColor('--primary') : varColor('--accent');
-
-            ui.update();
-            if (gameState.currentScene === 'game' && gameState.quizActive) ui.displayQuiz();
         }
 
-        // --- Save Data ---
-        function loadSaveData() { const save = localStorage.getItem('astroExplorerSave'); if (save) { highScores = JSON.parse(save); } }
-        function saveGameData() { highScores = { currentPlanet: gameState.planetIdx, currentHigh: gameState.currentHigh }; localStorage.setItem('astroExplorerSave', JSON.stringify(highScores)); }
-        function resetGame() { highScores = {}; localStorage.removeItem('astroExplorerSave'); initTitleScene(); }
+        function checkAnswer(selectedIdx, btnEl) {
+            const item = quizData[qIdx];
+            const opts = document.querySelectorAll('#quiz-options button');
+            opts.forEach(b => b.disabled = true);
 
-        // --- Core Utilities ---
-        function varColor(vName) { return getComputedStyle(document.documentElement).getPropertyValue(vName).trim(); }
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
 
-        // --- Particles ---
-        function spawnParticlesAt(x, y) { for (let i = 0; i < 5; i++) particles.push({ x, y, vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5, life: 30 + Math.random() * 20 }); }
-        function updateParticles() { particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; }); particles = particles.filter(p => p.life > 0); }
-        function drawParticles() { ctx.fillStyle = varColor('--danger'); particles.forEach(p => ctx.fillRect(p.x, p.y, 2, 2)); }
+            if(selectedIdx === item.ans) {
+                qScore += 20;
+                btnEl.className = 'w-full text-left p-3.5 rounded-xl border border-emerald-500 bg-emerald-950/60 text-emerald-300 text-sm font-medium';
+                feedback.className = 'p-3 rounded-xl text-center text-sm font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-800';
+                feedback.innerText = '✨ ถูกต้องครับ! เก่งมาก';
+            } else {
+                btnEl.className = 'w-full text-left p-3.5 rounded-xl border border-rose-500 bg-rose-950/60 text-rose-300 text-sm font-medium';
+                opts[item.ans].className = 'w-full text-left p-3.5 rounded-xl border border-emerald-500 bg-emerald-950/60 text-emerald-300 text-sm font-medium';
+                feedback.className = 'p-3 rounded-xl text-center text-sm font-semibold bg-rose-950/80 text-rose-300 border border-rose-800';
+                feedback.innerText = `❌ ยังไม่ถูกต้อง (คำตอบที่ถูกคือ: ${item.opts[item.ans]})`;
+            }
 
-        // --- Web Audio Synthesizer ---
-        function WebAudioSynthesizer() {
-            let audioCtx, masterGain;
-            this.init = () => { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); masterGain = audioCtx.createGain(); masterGain.connect(audioCtx.destination); };
-            const playSound = (freq, duration, type = 'sine', decay = 0.5, volume = 0.5) => {
-                if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime); gain.gain.setValueAtTime(volume * 0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + decay);
-                osc.connect(gain); gain.connect(masterGain); osc.start(); osc.stop(audioCtx.currentTime + decay);
-            };
-            this.playLaser = () => playSound(800, 0.1, 'sawtooth'); this.playHit = () => playSound(300, 0.2, 'triangle'); this.playPickup = () => playSound(1200, 0.2);
-            this.playDamage = () => playSound(200, 0.3, 'square'); this.playWarp = () => playSound(1500, 1.5, 'sine', 1.5);
-            this.playSuccess = () => { playSound(1000, 0.1); setTimeout(() => playSound(1300, 0.2), 100); };
-            this.playBGM = () => {}; this.stopBGM = () => {}; this.playGameOver = () => playSound(100, 2, 'square', 2, 1);
+            document.getElementById('quiz-score').innerText = qScore;
+            document.getElementById('btn-next-quiz').classList.remove('hidden');
         }
+
+        function nextQuestion() {
+            qIdx++;
+            if(qIdx < quizData.length) {
+                showQuestion();
+            } else {
+                const quizBox = document.getElementById('quiz-box');
+                quizBox.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <div class="text-6xl">🏆</div>
+                        <h3 class="text-2xl font-bold text-white">การทดสอบเสร็จสมบูรณ์!</h3>
+                        <p class="text-slate-300">คุณได้คะแนนรวม <span class="text-2xl font-bold text-purple-400">${qScore}</span> / 100 คะแนน</p>
+                        <button onclick="initQuiz(); switchTab('quiz');" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all">
+                            🔄 ทำแบบทดสอบอีกครั้ง
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        /* -------------------------------------------------------------
+           4. TAB SWITCHING SYSTEM
+        ------------------------------------------------------------- */
+        function switchTab(tabName) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn px-3.5 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 text-slate-400 hover:text-white';
+            });
+
+            document.getElementById(`sec-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.className = 'tab-btn active px-3.5 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+
+            if(tabName === 'game') {
+                resizeCanvas();
+            } else {
+                gameRunning = false;
+            }
+        }
+
+        window.onload = () => {
+            initExplorer();
+            initQuiz();
+            resizeCanvas();
+        };
     </script>
 </body>
 </html>
